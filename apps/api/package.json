@@ -1,0 +1,33 @@
+{
+  "name": "api",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "build": "tsc -b",
+    "start": "node ./dist/routes/index.js",
+    "dev": "npm run build && npm run start",
+    "test": "jest",
+    "test:watch": "jest --watch"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@repo/db": "*",
+    "@types/body-parser": "^1.19.6",
+    "@types/passport": "^1.0.17",
+    "@types/passport-spotify": "^2.0.4",
+    "body-parser": "^2.2.0",
+    "cors": "^2.8.5",
+    "express": "^5.1.0",
+    "helmet": "^8.1.0",
+    "morgan": "^1.10.1",
+    "passport": "^0.7.0",
+    "passport-jwt": "^4.0.1",
+    "passport-spotify": "^2.0.0",
+    "socket.io": "^4.8.1",
+    "zod": "^4.1.11"
+  }
+}

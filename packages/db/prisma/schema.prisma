@@ -1,0 +1,92 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Room {
+  id                String   @id    @default(uuid())
+  code              String   @unique
+  host_spotify_id   String
+  is_active         Boolean  @default(true)
+  createdAt         DateTime @default(now())
+  settings          Json     @default("{}")
+  
+  // Relations
+  members           RoomUser[]
+  tracks            Track[]
+  votes             Vote[]
+}
+
+model RoomUser {
+  id              String   @id @default(uuid())
+  room_id         String
+  user_id         String
+  role            Role     @default(GUEST)
+  joined_at       DateTime @default(now())
+  
+  // Relations
+  room            Room     @relation(fields: [room_id], references: [id], onDelete: Cascade)
+  added_tracks    Track[]
+  votes           Vote[]
+  
+  @@unique([room_id, user_id])
+}
+
+model Track {
+  id              String   @id    @default(uuid())
+  spotify_id      String
+  title           String
+  artist          String
+  duration_ms     Int
+  queue_position  Int?
+  added_at        DateTime @default(now())
+  added_by        String
+  room_id         String
+  
+  // Relations
+  room            Room     @relation(fields: [room_id], references: [id], onDelete: Cascade)
+  added_by_user   RoomUser @relation(fields: [added_by], references: [id])
+  votes           Vote[]
+  
+  @@unique([room_id, spotify_id])
+}
+
+model Vote {
+  id              String   @id @default(uuid())
+  track_id        String
+  user_id         String
+  room_id         String
+  vote_type       VoteType @default(NONE)
+  created_at      DateTime @default(now())
+  
+  // Relations
+  track           Track    @relation(fields: [track_id], references: [id], onDelete: Cascade)
+  user            RoomUser @relation(fields: [user_id], references: [id])
+  room            Room     @relation(fields: [room_id], references: [id], onDelete: Cascade)
+  
+  @@unique([track_id, user_id])
+}
+
+enum Role {
+  HOST
+  GUEST
+}
+
+enum VoteType {
+  UPVOTE
+  DOWNVOTE
+  SKIP
+  REMOVE
+  NONE  
+}
