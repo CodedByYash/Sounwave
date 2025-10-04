@@ -14,66 +14,87 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
-model Room {
-  id                String   @id    @default(uuid())
-  code              String   @unique
-  host_spotify_id   String
-  is_active         Boolean  @default(true)
-  createdAt         DateTime @default(now())
-  settings          Json     @default("{}")
+model User {
+  id                String        @id     @default(uuid())
+  spotify_id        String        @unique
+  email             String
+  display_name      String
+  image_url         String?
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @updatedAt
   
   // Relations
+  hosted_rooms      Room[]        @relation("RoomHost")
+  room_memberships  RoomUser[]
+  votes             Vote[]
+  
+}
+
+model Room {
+  id                String        @id     @default(uuid())
+  code              String        @unique
+  host_user_id      String        // Reference to User.id, not spotify_id
+  is_active         Boolean       @default(true)
+  created_at        DateTime      @default(now())
+  updated_at        DateTime      @updatedAt
+  settings          Json          @default("{}")
+  
+  // Relations
+  host              User          @relation("RoomHost", fields: [host_user_id], references: [id], onDelete: Cascade)
   members           RoomUser[]
   tracks            Track[]
   votes             Vote[]
 }
 
 model RoomUser {
-  id              String   @id @default(uuid())
+  id              String          @id     @default(uuid())
   room_id         String
   user_id         String
-  role            Role     @default(GUEST)
-  joined_at       DateTime @default(now())
+  role            Role            @default(GUEST)
+  joined_at       DateTime        @default(now())
   
   // Relations
-  room            Room     @relation(fields: [room_id], references: [id], onDelete: Cascade)
+  room            Room            @relation(fields: [room_id], references: [id], onDelete: Cascade)
+  user            User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
   added_tracks    Track[]
-  votes           Vote[]
   
   @@unique([room_id, user_id])
 }
 
 model Track {
-  id              String   @id    @default(uuid())
+  id              String          @id     @default(uuid())
   spotify_id      String
   title           String
   artist          String
+  album           String?
   duration_ms     Int
+  preview_url     String?
+  image_url       String?
   queue_position  Int?
-  added_at        DateTime @default(now())
-  added_by        String
+  added_at        DateTime        @default(now())
   room_id         String
+  added_by_id     String
   
   // Relations
-  room            Room     @relation(fields: [room_id], references: [id], onDelete: Cascade)
-  added_by_user   RoomUser @relation(fields: [added_by], references: [id])
+  room            Room            @relation(fields: [room_id], references: [id], onDelete: Cascade)
+  added_by        RoomUser        @relation(fields: [added_by_id], references: [id], onDelete: Cascade)
   votes           Vote[]
   
   @@unique([room_id, spotify_id])
 }
 
 model Vote {
-  id              String   @id @default(uuid())
+  id              String          @id     @default(uuid())
   track_id        String
   user_id         String
   room_id         String
-  vote_type       VoteType @default(NONE)
-  created_at      DateTime @default(now())
+  vote_type       VoteType        @default(NONE)
+  created_at      DateTime        @default(now())
   
   // Relations
-  track           Track    @relation(fields: [track_id], references: [id], onDelete: Cascade)
-  user            RoomUser @relation(fields: [user_id], references: [id])
-  room            Room     @relation(fields: [room_id], references: [id], onDelete: Cascade)
+  track           Track           @relation(fields: [track_id], references: [id], onDelete: Cascade)
+  user            User            @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  room            Room            @relation(fields: [room_id], references: [id], onDelete: Cascade)
   
   @@unique([track_id, user_id])
 }

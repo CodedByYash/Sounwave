@@ -1,6 +1,6 @@
 import prisma from "@repo/db/client";
 
-export const roomCodeGenerator = async (length: number) => {
+export const roomCodeGenerator = async (length: number): Promise<string> => {
   const string =
     "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
   const charactersLength = string.length;
@@ -10,7 +10,7 @@ export const roomCodeGenerator = async (length: number) => {
   }
 
   const finalResult = await uniqnessChecker(result);
-  return finalResult ? result : "";
+  return finalResult ? result : roomCodeGenerator(6);
 };
 
 const uniqnessChecker = async (roomCode: string): Promise<boolean> => {
