@@ -1,0 +1,16 @@
+{
+  "files": [],
+  "references": [
+    { "path": "./apps/web" },
+    { "path": "./apps/api" },
+    { "path": "./packages/db" },
+    { "path": "./packages/shared" },
+    { "path": "./packages/ui" }
+  ],
+  "compilerOptions": {
+    "composite": true,
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true
+  }
+}
