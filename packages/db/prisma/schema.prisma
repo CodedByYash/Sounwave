@@ -17,8 +17,10 @@ datasource db {
 model User {
   id                String        @id     @default(uuid())
   spotify_id        String        @unique
-  email             String
+  email             String?
   display_name      String
+  accessToken       String
+  refreshToken      String
   image_url         String?
   created_at        DateTime      @default(now())
   updated_at        DateTime      @updatedAt
