@@ -1,7 +1,7 @@
-import z, { string } from "zod";
+import z from 'zod';
 
 export const roomSchema = z.object({
-  host_spotify_id: z.string().trim().min(6).max(400),
+  host_user_id: z.string().trim().min(6).max(400),
   is_active: z.boolean(),
   settings: z.object({}),
 });

@@ -16,14 +16,14 @@ datasource db {
 
 model User {
   id                String        @id     @default(uuid())
-  spotify_id        String        @unique
+  spotifyId        String        @unique
   email             String?
-  display_name      String
+  displayName      String
   accessToken       String
   refreshToken      String
-  image_url         String?
-  created_at        DateTime      @default(now())
-  updated_at        DateTime      @updatedAt
+  imageUrl         String?
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
   
   // Relations
   hosted_rooms      Room[]        @relation("RoomHost")

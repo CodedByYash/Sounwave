@@ -1,44 +1,37 @@
-import prisma from '@repo/db';
+import { Strategy as SpotifyStrategy } from 'passport-spotify';
 import passport from 'passport';
-import { Strategy as SpotifyStratergy } from 'passport-spotify';
+import prisma from '@repo/db';
 
 passport.use(
-  new SpotifyStratergy(
+  new SpotifyStrategy(
     {
-      clientID: process.env.SPOTIFY_CLIENT_ID as string,
-      clientSecret: process.env.SPOTIFY_CLIENT_SECRET as string,
-      callbackURL: process.env.CALLBACK_URL as string,
+      clientID: process.env.SPOTIFY_CLIENT_ID!,
+      clientSecret: process.env.SPOTIFY_CLIENT_SECRET!,
+      callbackURL: process.env.SPOTIFY_REDIRECT_URI!,
     },
     async (accessToken, refreshToken, expires_in, profile, done) => {
       try {
-        let user = await prisma.user.findUnique({
-          where: {
-            spotify_id: profile.id,
+        // upsert user in DB; store refreshToken (encrypted if possible)
+        const user = await prisma.user.upsert({
+          where: { spotifyId: profile.id },
+          update: {
+            displayName: profile.displayName ?? profile.username ?? 'Unknown',
+            accessToken,
+            refreshToken, // optional: consider encrypting refreshToken
+          },
+          create: {
+            spotifyId: profile.id,
+            displayName: profile.displayName ?? profile.username ?? 'Unknown',
+            accessToken,
+            refreshToken,
           },
         });
-        if (!user) {
-          user = await prisma.user.create({
-            data: {
-              spotify_id: profile.id,
-              accessToken,
-              refreshToken,
-              display_name: profile.displayName,
-            },
-          });
-        } else {
-          await prisma.user.update({
-            where: {
-              spotify_id: profile.id,
-            },
-            data: {
-              accessToken,
-              refreshToken,
-            },
-          });
-        }
-        return done(null, user);
+        if (!user) return done(null);
+
+        // pass user object to serializeUser
+        done(null, user);
       } catch (err: unknown) {
-        return done(null);
+        done(err as Error);
       }
     },
   ),

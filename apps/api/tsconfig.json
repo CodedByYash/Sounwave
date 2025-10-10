@@ -6,8 +6,9 @@
     "moduleResolution": "node",
     "esModuleInterop": true,
     "module": "commonjs",
-    "target": "ES2022"
+    "target": "ES2022",
+    "types": ["node", "express"]
   },
-  "include": ["src/**/*.ts"],
+  "include": ["src/**/*.ts", "src/types"],
   "exclude": ["__tests__", "dist", "node_modules"]
 }

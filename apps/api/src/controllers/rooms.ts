@@ -5,8 +5,8 @@ import { roomCodeGenerator } from '../utils/roomCode';
 import prisma from '@repo/db';
 
 export const RoomCreation = async (req: Request, res: Response) => {
-  //@ts-ignore
   const auth = req.auth;
+  if (!auth) return res.status(401).json({ message: 'Unauthorized' });
   const parsed = roomSchema.safeParse(req.body);
 
   if (!parsed.success) {
@@ -15,12 +15,12 @@ export const RoomCreation = async (req: Request, res: Response) => {
   }
   try {
     const code = await roomCodeGenerator(6);
-    const { host_spotify_id, is_active, settings } = parsed.data;
+    const { host_user_id, is_active, settings } = parsed.data;
     const room = await prisma.room.create({
       data: {
         code,
-        host_spotify_id,
-        createdAt: new Date(),
+        host_user_id,
+        created_at: new Date(),
         is_active,
         settings,
       },
@@ -39,8 +39,8 @@ export const RoomCreation = async (req: Request, res: Response) => {
 };
 
 export const RoomJoin = async (req: Request, res: Response) => {
-  //@ts-ignore
   const auth = req.auth;
+  if (!auth) return res.status(401).json({ message: 'Unauthorized' });
   const parsed = roomJoiningSchema.safeParse(req.body);
   if (!parsed.success) {
     res.status(400).json({ message: 'Invalid code' });
@@ -81,13 +81,13 @@ export const RoomJoin = async (req: Request, res: Response) => {
 };
 
 export const ListRooms = async (req: Request, res: Response) => {
-  //@ts-ignore
   const auth = req.auth;
+  if (!auth) return res.status(401).json({ message: 'Unauthorized' });
 
   const response = await prisma.user.findFirst({
     where: { id: auth.id },
     select: {
-      rooms: true,
+      hosted_rooms: true,
     },
   });
 
