@@ -4,7 +4,7 @@ import { NextFunction, Request, RequestHandler, Response } from 'express';
 export const requiredHostForRoom = (roomIdParam = 'code'): RequestHandler => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
-      const user = req.auth;
+      const user = req.user;
       if (!user) {
         res.status(401).json({ ok: false, message: 'Unauthorized' });
         return;

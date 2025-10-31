@@ -1,25 +1,34 @@
-import Redis from 'ioredis';
 import session from 'express-session';
-import connectRedis, { RedisStore } from 'connect-redis';
+import { RedisStore } from 'connect-redis';
+import 'dotenv/config';
+import { createClient } from 'redis';
 
-const RedisClient = new Redis(process.env.REDIS_URL || 'http://localhost:6379');
+console.log('🔄 Initializing Redis client...');
 
-const store = new RedisStore({
-  client: RedisClient,
-  prefix: 'soundwave',
+export const redisClient = createClient({
+  url: process.env.REDIS_URL ?? 'redis://127.0.0.1:6379',
+});
+
+redisClient.on('connect', () => console.log('✅ Redis connected successfully'));
+redisClient.on('error', (err) => console.error('❌ Redis connection error:', err));
+
+// Connect to Redis immediately
+redisClient.connect().catch((err) => {
+  console.error('❌ Failed to connect to Redis:', err);
 });
 
 export const sessionMiddleware = session({
-  store,
-  secret: process.env.SESSION_SECRET!,
+  store: new RedisStore({
+    client: redisClient,
+    prefix: 'soundwave:',
+  }),
+  secret: process.env.SESSION_SECRET as string,
   resave: false,
   saveUninitialized: false,
   cookie: {
     httpOnly: true,
     secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
-    maxAge: 7 * 24 * 60 * 60 * 1000,
+    maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
   },
 });
-
-export { RedisClient };

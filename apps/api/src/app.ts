@@ -6,8 +6,6 @@ import { errorMiddleware } from './middlewares/errorHandler';
 import { sessionMiddleware } from './config/session';
 import routes from './routes/index';
 import passport from 'passport';
-import session from 'express-session';
-import './config/passport';
 import authRouter from './routes/auth';
 import prisma from '@repo/db';
 
@@ -28,29 +26,28 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-
+console.log('SPOTIFY_CLIENT_ID:', process.env.SPOTIFY_CLIENT_ID);
+console.log('SPOTIFY_REDIRECT_URI:', process.env.SPOTIFY_REDIRECT_URI);
 app.use(sessionMiddleware);
-// app.use(
-//   session({
-//     secret: process.env.SESSION_SESSION!,
-//     resave: false,
-//     saveUninitialized: false,
-//   }),
-// );
-
 app.use(passport.initialize());
-app.use(passport.session());
+app.use(passport.session()); // Ensure this is after sessionMiddleware
 
-passport.serializeUser((user, done) => done(null, user.id));
+passport.serializeUser((user: any, done) => {
+  console.log('Serializing user:', user.id);
+  done(null, user.id);
+});
+
 passport.deserializeUser(async (id: string, done) => {
+  console.log('Deserializing user with id:', id);
   try {
     const user = await prisma.user.findUnique({
-      where: {
-        id,
-      },
+      where: { id },
     });
-    if (!user) return done(null, false);
-
+    if (!user) {
+      console.error('User not found during deserialization');
+      return done(null, false);
+    }
+    console.log('Deserialized user:', user);
     done(null, {
       id: user.id,
       email: user.email ?? undefined,
@@ -60,6 +57,7 @@ passport.deserializeUser(async (id: string, done) => {
       refreshToken: user.refreshToken,
     });
   } catch (err: unknown) {
+    console.error('Deserialization error:', err);
     done(err as Error);
   }
 });
@@ -67,3 +65,9 @@ passport.deserializeUser(async (id: string, done) => {
 app.use('/api/auth', authRouter);
 app.use('/api', routes);
 app.use(errorMiddleware);
+
+// Log session data
+app.use((req, res, next) => {
+  console.log('Session data:', req.session);
+  next();
+});

@@ -12,7 +12,7 @@ declare global {
       imageUrl?: string;
     }
     interface Request {
-      auth?: User;
+      user?: User;
       isAuthenticated(): boolean;
     }
   }

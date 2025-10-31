@@ -10,14 +10,14 @@ passport.use(
       callbackURL: process.env.SPOTIFY_REDIRECT_URI!,
     },
     async (accessToken, refreshToken, expires_in, profile, done) => {
+      console.log('Spotify Strategy called with profile:', profile);
       try {
-        // upsert user in DB; store refreshToken (encrypted if possible)
-        const user = await prisma.user.upsert({
+        let user = await prisma.user.upsert({
           where: { spotifyId: profile.id },
           update: {
             displayName: profile.displayName ?? profile.username ?? 'Unknown',
             accessToken,
-            refreshToken, // optional: consider encrypting refreshToken
+            refreshToken,
           },
           create: {
             spotifyId: profile.id,
@@ -26,11 +26,14 @@ passport.use(
             refreshToken,
           },
         });
-        if (!user) return done(null);
-
-        // pass user object to serializeUser
+        console.log('User upserted:', user);
+        if (!user) {
+          console.error('User upsert failed, no user returned');
+          return done(new Error('User upsert failed'));
+        }
         done(null, user);
       } catch (err: unknown) {
+        console.error('Error in SpotifyStrategy:', err);
         done(err as Error);
       }
     },

@@ -1,10 +1,9 @@
-import prisma from "@repo/db/client";
+import prisma from '@repo/db';
 
 export const roomCodeGenerator = async (length: number): Promise<string> => {
-  const string =
-    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  const string = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
   const charactersLength = string.length;
-  let result = "";
+  let result = '';
   for (let i = 0; i < length; i++) {
     result += string.charAt(Math.floor(Math.random() * charactersLength));
   }
