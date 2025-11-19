@@ -1,0 +1,24 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "rootDir": "./src",
+    "outDir": "./dist",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "module": "commonjs",
+    "target": "ES2022",
+    "types": ["node", "express", "express-session"],
+    "typeRoots": ["../../node_modules/@types", "./src/types"],
+    "strict": true,
+    "forceConsistentCasingInFileNames": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/types/**/*.d.ts",
+    "socket.d.ts",
+    "express.d.ts",
+    "src/**/*",
+    "types/**/*"
+  ],
+  "exclude": ["__tests__", "dist", "node_modules"]
+}
